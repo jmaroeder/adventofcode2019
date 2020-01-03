@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from adventofcode2019.day2 import run_intcode
+from adventofcode2019.intcodecomputer import run_intcode
 
 
 @pytest.mark.parametrize(
@@ -17,14 +17,3 @@ from adventofcode2019.day2 import run_intcode
 def test_parta(initial, final, caplog):
     caplog.set_level(logging.DEBUG)
     assert run_intcode(initial) == final
-
-
-# @pytest.mark.parametrize(
-#     ('mass', 'fuel'), [
-#         (14, 2),
-#         (1969, 966),
-#         (100756, 50346),
-#     ],
-# )
-# def test_partb(mass, fuel):
-#     assert get_total_fuel(mass) == fuel

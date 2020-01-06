@@ -25,7 +25,7 @@ def test_parta_io(initial, stdin, stdout, caplog):
     caplog.set_level(logging.DEBUG)
     vm = IntcodeComputerV5(initial=initial, stdin=stdin)
     vm.run()
-    assert vm.stdout == stdout
+    assert list(vm.stdout) == stdout
 
 
 @pytest.mark.parametrize(
@@ -64,7 +64,7 @@ def test_partb(initial, stdin, stdout, caplog):
     LOG.info('Using stdin: %s, expecting stdout: %s', stdin, stdout)
     vm = IntcodeComputerV5(initial=initial, stdin=stdin)
     vm.run()
-    assert vm.stdout == stdout
+    assert list(vm.stdout) == stdout
 
 
 

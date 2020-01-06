@@ -3,6 +3,7 @@ import re
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from enum import Enum
+from queue import Queue, Empty
 from typing import Iterable, List, MutableMapping, MutableSequence, Type, Union, Optional
 
 LOG = logging.getLogger(__name__)
@@ -96,7 +97,7 @@ class SaveInstruction(Instruction):
     parameter_count = 1
 
     def execute(self):
-        self.result = self.computer.stdin.pop(0)
+        self.result = self.computer.get_stdin()
 
 
 class OutputInstruction(Instruction):
@@ -104,7 +105,7 @@ class OutputInstruction(Instruction):
     parameter_count = 1
 
     def execute(self):
-        self.computer.stdout.append(self.input_1)
+        self.computer.put_stdout(self.input_1)
 
 
 class JumpIfTrueInstruction(Instruction):
@@ -163,12 +164,34 @@ class IntcodeComputer:
             int(val) for val in initial
         ]
         self.iptr = 0
-        self.stdin = stdin or []
-        self.stdout = []
+        self._stdin = Queue()
+        for item in stdin or []:
+            self.put_stdin(item)
+        self._stdout = Queue()
         self.jumped: Optional[bool] = None
         self.instructions: MutableMapping[Opcode, Instruction] = {}
         for instruction in instruction_classes or self.default_instruction_classes:
             self.register_instr(instruction)
+
+    def get_stdin(self) -> int:
+        return self._stdin.get()
+
+    def get_stdout(self) -> int:
+        return self._stdout.get()
+
+    def get_stdout_nowait(self) -> int:
+        return self._stdout.get_nowait()
+
+    def put_stdout(self, value: int) -> None:
+        self._stdout.put(value)
+
+    def put_stdin(self, value: int) -> None:
+        self._stdin.put(value)
+
+    @property
+    def stdout(self) -> Iterable[int]:
+        with suppress(Empty):
+            yield self._stdout.get_nowait()
 
     def register_instr(self, instr_cls: Type[Instruction]) -> None:
         self.instructions[instr_cls.opcode] = instr_cls(self)
@@ -179,9 +202,9 @@ class IntcodeComputer:
                 self.tick()
 
     def tick(self) -> None:
-        LOG.debug('PC=%s, MEM=%s', self.iptr, str(self))
+        # LOG.debug('PC=%s, MEM=%s', self.iptr, str(self))
         opcode = Opcode(self.memory[self.iptr] % 100)
-        LOG.debug('Executing %s', opcode.name)
+        # LOG.debug('Executing %s', opcode.name)
         instr = self.instructions[opcode]
         self.jumped = False
         instr.execute()

@@ -1,6 +1,6 @@
 import argparse
 
-from adventofcode2019.intcodecomputer import run_intcode, IntcodeComputerV5
+from adventofcode2019.intcode.computer import IntcodeComputerV5
 
 
 def parta(instructions: str) -> None:

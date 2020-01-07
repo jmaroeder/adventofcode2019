@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from adventofcode2019.intcodecomputer import run_intcode, IntcodeComputerV5
+from adventofcode2019.intcode.computer import run_intcode, IntcodeComputerV5
 
 LOG = logging.getLogger(__name__)
 

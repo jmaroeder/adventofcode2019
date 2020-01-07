@@ -7,7 +7,7 @@ from contextlib import suppress
 from time import sleep
 from typing import Union, Iterable, Sequence
 
-from adventofcode2019.intcodecomputer import IntcodeComputerV5
+from adventofcode2019.intcode.computer import IntcodeComputerV5
 
 LOG = logging.getLogger(__name__)
 

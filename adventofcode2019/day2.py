@@ -1,6 +1,6 @@
 import argparse
 
-from adventofcode2019.intcodecomputer import run_intcode
+from adventofcode2019.intcode.computer import run_intcode
 
 
 def parta(input_data: str, noun: int = 12, verb: int = 2) -> str:

@@ -4,7 +4,7 @@ from contextlib import suppress
 from queue import Empty, Queue
 from typing import Iterable, List, MutableMapping, Optional, Type, Union
 
-from .exceptions import Halt, ParameterError
+from .exceptions import Halt, ParameterError, WaitingForInput, InvalidState
 from .instruction import AddInstruction, AdjustRelativeBaseInstruction, EqualsInstruction, \
     HaltInstruction, Instruction, JumpIfFalseInstruction, JumpIfTrueInstruction, \
     LessThanInstruction, MultiplyInstruction, OutputInstruction, SaveInstruction
@@ -35,8 +35,14 @@ class IntcodeComputer:
         self._stdout = Queue()
         self.jumped: Optional[bool] = None
         self.instructions: MutableMapping[Opcode, Instruction] = {}
+        self._alive = False
+        self._started = False
         for instruction in instruction_classes or self.default_instruction_classes:
             self.register_instr(instruction)
+
+    @property
+    def is_terminated(self) -> bool:
+        return self._started and not self._alive
 
     def get_stdin(self) -> int:
         return self._stdin.get()
@@ -62,12 +68,21 @@ class IntcodeComputer:
     def register_instr(self, instr_cls: Type[Instruction]) -> None:
         self.instructions[instr_cls.opcode] = instr_cls(self)
 
+    def kill(self) -> None:
+        self._alive = False
+
     def run(self) -> None:
         with suppress(Halt):
-            while True:
+            while not self.is_terminated:
                 self.tick()
 
     def tick(self) -> None:
+        if not self._started:
+            self._started = True
+            self._alive = True
+        if not self._alive:
+            raise InvalidState("Computer has already halted!")
+
         # LOG.debug('iptr=%s, rbptr=%s, MEM=%s', self.iptr, self.rbptr, str(self))
         opcode = Opcode(self.memory[self.iptr] % 100)
         # LOG.debug('Executing %s', opcode.name)
@@ -133,6 +148,14 @@ class IntcodeComputerV9(IntcodeComputerV5):
     default_instruction_classes = IntcodeComputerV5.default_instruction_classes + [
         AdjustRelativeBaseInstruction
     ]
+
+
+class IntcodeComputerV11(IntcodeComputerV9):
+    def get_stdin(self) -> int:
+        # overridden to raise an error when waiting for input
+        if self._stdin.empty():
+            raise WaitingForInput()
+        return super().get_stdin()
 
 
 def run_intcode(input_data: Union[str, Iterable[int]],

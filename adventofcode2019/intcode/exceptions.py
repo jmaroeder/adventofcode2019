@@ -8,3 +8,11 @@ class Halt(IntcodeException):
 
 class ParameterError(IntcodeException):
     """Raised when an invalid parameter is encountered"""
+
+
+class WaitingForInput(IntcodeException):
+    """Raised when computer needs input"""
+
+
+class InvalidState(IntcodeException):
+    """Invalid state"""

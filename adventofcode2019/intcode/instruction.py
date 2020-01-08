@@ -61,6 +61,7 @@ class HaltInstruction(Instruction):
     parameter_count = 0
 
     def execute(self):
+        self.computer.kill()
         raise Halt()
 
 
